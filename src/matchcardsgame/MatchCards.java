@@ -1,6 +1,5 @@
 package matchcardsgame;
 
-
 import java.awt.*;
 import java.awt.event.*;
 import java.util.ArrayList;
@@ -10,41 +9,10 @@ import java.net.URL;
 
 
 public class MatchCards {
-    class Card {
-        String cardName;
-        ImageIcon cardImageIcon;
-
-        Card(String cardName, ImageIcon cardImageIcon) {
-            this.cardName = cardName;
-            this.cardImageIcon = cardImageIcon;
-        }
-
-        public String toString() {
-            return cardName;
-        }
-    }
-    
+    //attributes
     Clip backgroundClip;
-
     Clip victoryClip;
-
     
-void playBackgroundMusic(URL musicURL) {
-    try {
-        AudioInputStream audioInput =AudioSystem.getAudioInputStream(musicURL);
-        backgroundClip = AudioSystem.getClip();
-            backgroundClip.open(audioInput);
-            FloatControl bgGain = (FloatControl) backgroundClip.getControl(FloatControl.Type.MASTER_GAIN);
-            bgGain.setValue(-6.0f); 
-            backgroundClip.loop(Clip.LOOP_CONTINUOUSLY); 
-            backgroundClip.start();
-        
-    } catch (Exception ex) {
-        ex.printStackTrace();
-    }
-}
-
-
     String[] cardList = { 
         "clint",
         "lukas",
@@ -73,48 +41,57 @@ void playBackgroundMusic(URL musicURL) {
         "Atlas"
     };
 
+    ArrayList<Card> cardSet; 
+    ImageIcon cardBackImageIcon;
+    
     int rows = 4;
     int columns = 5;
     int cardWidth = 140;
     int cardHeight = 170;
-    
-
-    ArrayList<Card> cardSet; 
-    ImageIcon cardBackImageIcon;
-
     int boardWidth = 700; 
     int boardHeight = 680; 
-
+    
     JFrame frame = new JFrame("Mobile Legends Match Cards");
     JLabel textLabel = new JLabel();
     JPanel textPanel = new JPanel();
     JPanel boardPanel = new JPanel();
     JPanel restartGamePanel = new JPanel();
     JButton restartButton = new JButton();
-
-    int errorCount = 0;
+    JButton card1Selected;
+    JButton card2Selected;
+    
     ActionListener tileClickListener;
     ArrayList<JButton> board;
     Timer hideCardTimer;
     Timer startLevelTimer;
     boolean gameReady = false;
-    JButton card1Selected;
-    JButton card2Selected;
     
     int level = 1;
+    int errorCount = 0;
     int maxErrors = 10;
-
     
+    //inner class card
+    class Card {
+        String cardName;
+        ImageIcon cardImageIcon;
+
+        Card(String cardName, ImageIcon cardImageIcon) {
+            this.cardName = cardName;
+            this.cardImageIcon = cardImageIcon;
+        }
+
+        public String toString() {
+            return cardName;
+        }
+    }
+    
+    //constructor
     MatchCards() {
         URL bgMusicURL = getClass().getClassLoader().getResource("res/background.wav");
-playBackgroundMusic(bgMusicURL);
-
-setupTileClickListener();
-        
+        playBackgroundMusic(bgMusicURL);
+        setupTileClickListener();
         setupCards();
         shuffleCards();
-
-        
 
         frame.setLayout(new BorderLayout());
         frame.setSize(boardWidth, boardHeight);
@@ -124,7 +101,7 @@ setupTileClickListener();
 
         textLabel.setFont(new Font("Arial", Font.PLAIN, 20));
         textLabel.setHorizontalAlignment(JLabel.CENTER);
-textLabel.setText("Level "  + getLevelName(level) + " - Errors: " + errorCount + "/" + maxErrors);
+        textLabel.setText("Level "  + getLevelName(level) + " - Errors: " + errorCount + "/" + maxErrors);
 
         textPanel.setPreferredSize(new Dimension(boardWidth, 30));
         textPanel.add(textLabel);
@@ -136,7 +113,7 @@ textLabel.setText("Level "  + getLevelName(level) + " - Errors: " + errorCount +
             JButton tile = new JButton();
             tile.setPreferredSize(new Dimension(cardWidth, cardHeight));
             tile.setOpaque(true);
-tile.setIcon(cardBackImageIcon);
+            tile.setIcon(cardBackImageIcon);
             tile.setFocusable(false);
             tile.addActionListener(tileClickListener);
 
@@ -162,7 +139,7 @@ tile.setIcon(cardBackImageIcon);
                 card1Selected = null;
                 card2Selected = null;
                 setupCards(); 
-shuffleCards(); 
+                shuffleCards(); 
 
 
                 for (int i = 0; i < board.size(); i++) {
@@ -170,10 +147,10 @@ shuffleCards();
                 }
 
                 errorCount = 0;
-textLabel.setText("Level "  + getLevelName(level) + " - Errors: " + errorCount + "/" + maxErrors);
+                textLabel.setText("Level "  + getLevelName(level) + " - Errors: " + errorCount + "/" + maxErrors);
                 for (int i = 0; i < board.size(); i++) {
-    board.get(i).setIcon(cardSet.get(i).cardImageIcon); 
-}
+                    board.get(i).setIcon(cardSet.get(i).cardImageIcon); 
+                }
 
                 startLevelTimer.start();
             }
@@ -183,9 +160,9 @@ textLabel.setText("Level "  + getLevelName(level) + " - Errors: " + errorCount +
 
         frame.pack();
         frame.setVisible(true);
-for (int i = 0; i < board.size(); i++) {
-    board.get(i).setIcon(cardSet.get(i).cardImageIcon);
-}
+        for (int i = 0; i < board.size(); i++) {
+           board.get(i).setIcon(cardSet.get(i).cardImageIcon);
+        }
         hideCardTimer = new Timer(2000, new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
@@ -195,31 +172,129 @@ for (int i = 0; i < board.size(); i++) {
         hideCardTimer.setRepeats(false);
 
         startLevelTimer = new Timer(5000, new ActionListener() {
-    @Override
-    public void actionPerformed(ActionEvent e) {
+        @Override
+        public void actionPerformed(ActionEvent e) {
         hideCards(); 
-    }
-});
-startLevelTimer.setRepeats(false);
+        }
+        });
+        startLevelTimer.setRepeats(false);
         startLevelTimer.start();
-
     }
     
-    
-    
-    
-    public void playSoundEffect(URL soundURL) {
-    try {
-        AudioInputStream audioInput = AudioSystem.getAudioInputStream(soundURL);
-        Clip clip = AudioSystem.getClip();
-        clip.open(audioInput);
-        clip.start();
-    } catch (Exception e) {
-        e.printStackTrace();
+    //Game Setup
+    void setupCards() {
+    cardSet = new ArrayList<>();
+    ArrayList<String> cardPool = new ArrayList<>();
+    for (String name : cardList) cardPool.add(name);
+    java.util.Collections.shuffle(cardPool);
+
+    int pairCount = getPairCountForLevel(level);
+    if (pairCount > cardList.length) pairCount = cardList.length;
+
+    ArrayList<String> selectedCards = new ArrayList<>(cardPool.subList(0, pairCount));
+
+    for (String cardName : selectedCards) {
+        URL imgURL = getClass().getClassLoader().getResource("res/" + cardName + ".png");
+        if (imgURL != null) {
+            Image cardImg = new ImageIcon(imgURL).getImage();
+            ImageIcon cardImageIcon = new ImageIcon(cardImg.getScaledInstance(cardWidth, cardHeight, Image.SCALE_SMOOTH));
+            Card card = new Card(cardName, cardImageIcon);
+            cardSet.add(card);
+        } else {
+            System.err.println("Image not found for card: " + cardName);
+        }
+    }
+
+    cardSet.addAll(new ArrayList<>(cardSet)); 
+
+    URL backURL = getClass().getClassLoader().getResource("res/back.jpg");
+    if (backURL != null) {
+        Image cardBackImg = new ImageIcon(backURL).getImage();
+        cardBackImageIcon = new ImageIcon(cardBackImg.getScaledInstance(cardWidth, cardHeight, Image.SCALE_SMOOTH));
+    } else {
+        System.err.println("Card back image not found!");
     }
 }
+    
+     void shuffleCards() {
+        System.out.println(cardSet);
+        for (int i = 0; i < cardSet.size(); i++) {
+            int j = (int) (Math.random() * cardSet.size()); 
+            Card temp = cardSet.get(i);
+            cardSet.set(i, cardSet.get(j));
+            cardSet.set(j, temp);
+        }
+        System.out.println(cardSet);
+    }
 
-void setupTileClickListener() {
+    void hideCards() {
+        if (gameReady && card1Selected != null && card2Selected != null) { 
+            card1Selected.setIcon(cardBackImageIcon);
+            card1Selected = null;
+            card2Selected.setIcon(cardBackImageIcon);
+            card2Selected = null;
+        }
+        else { 
+            for (int i = 0; i < board.size(); i++) {
+                board.get(i).setIcon(cardBackImageIcon);
+            }
+            gameReady = true;
+            restartButton.setEnabled(true);
+        }
+    }
+    
+    void resetBoard() {
+    boardPanel.removeAll();
+    board.clear();
+
+    int totalCards = cardSet.size();
+    int gridRows = rows;
+    int gridCols = totalCards / gridRows;
+    if (totalCards % gridRows != 0) gridCols++;
+
+    boardPanel.setLayout(new GridLayout(gridRows, gridCols));
+
+    for (int i = 0; i < totalCards; i++) {
+        JButton newTile = new JButton();
+        newTile.setPreferredSize(new Dimension(cardWidth, cardHeight));
+        newTile.setOpaque(true);
+        newTile.setIcon(cardSet.get(i).cardImageIcon);
+        newTile.setFocusable(false);
+        newTile.addActionListener(tileClickListener);
+        board.add(newTile);
+        boardPanel.add(newTile);
+    }
+
+    boardPanel.revalidate();
+    boardPanel.repaint();
+}
+    
+     
+    void showFinalImagePopup() {
+    if (backgroundClip != null && backgroundClip.isRunning()) {
+        backgroundClip.stop();
+    }
+
+    URL victorySoundURL = getClass().getClassLoader().getResource("res/victory.wav");
+    playSoundEffect(victorySoundURL);
+
+    URL victoryImgURL = getClass().getClassLoader().getResource("res/victory.png");
+    if (victoryImgURL != null) {
+        ImageIcon imageIcon = new ImageIcon(victoryImgURL);
+        Image scaledImg = imageIcon.getImage().getScaledInstance(600, 400, Image.SCALE_SMOOTH);
+        ImageIcon scaledIcon = new ImageIcon(scaledImg);
+
+        JLabel imageLabel = new JLabel(scaledIcon);
+        JOptionPane.showMessageDialog(frame, imageLabel, "Congratulations!", JOptionPane.PLAIN_MESSAGE);
+    } else {
+        System.err.println("Victory image not found!");
+    }
+
+    URL bgMusicURL = getClass().getClassLoader().getResource("res/background.wav");
+    playBackgroundMusic(bgMusicURL);
+}
+    
+    void setupTileClickListener() {
     tileClickListener = new ActionListener() {
         @Override
         public void actionPerformed(ActionEvent e) {
@@ -365,6 +440,46 @@ boardPanel.setLayout(new GridLayout(gridRows, gridCols));
         }
     };
 }
+
+ //sound methods
+void playBackgroundMusic(URL musicURL) {
+    try {
+        AudioInputStream audioInput =AudioSystem.getAudioInputStream(musicURL);
+        backgroundClip = AudioSystem.getClip();
+            backgroundClip.open(audioInput);
+            FloatControl bgGain = (FloatControl) backgroundClip.getControl(FloatControl.Type.MASTER_GAIN);
+            bgGain.setValue(-6.0f); 
+            backgroundClip.loop(Clip.LOOP_CONTINUOUSLY); 
+            backgroundClip.start();
+        
+    } catch (Exception ex) {
+        ex.printStackTrace();
+    }
+}
+
+    
+    void playSoundEffect(URL soundURL) {
+    try {
+        AudioInputStream audioInput = AudioSystem.getAudioInputStream(soundURL);
+        Clip clip = AudioSystem.getClip();
+        clip.open(audioInput);
+        clip.start();
+    } catch (Exception e) {
+        e.printStackTrace();
+    }
+}
+    
+//helper methods
+String getLevelName(int level) {
+    switch (level) {
+        case 1: return "Easy";
+        case 2: return "Medium";
+        case 3: return "Hard";
+        case 4: return "Extreme";
+        default: return "Unknown";
+    }
+}
+   
 int getPairCountForLevel(int level) {
     switch(level) {
         case 1: return 10;   
@@ -375,132 +490,6 @@ int getPairCountForLevel(int level) {
         default: return 10 ;
     }
 }
-String getLevelName(int level) {
-    switch (level) {
-        case 1: return "Easy";
-        case 2: return "Medium";
-        case 3: return "Hard";
-        case 4: return "Extreme";
-        default: return "Unknown";
-    }
-}
-
-void setupCards() {
-    cardSet = new ArrayList<>();
-    ArrayList<String> cardPool = new ArrayList<>();
-    for (String name : cardList) cardPool.add(name);
-    java.util.Collections.shuffle(cardPool);
-
-    int pairCount = getPairCountForLevel(level);
-    if (pairCount > cardList.length) pairCount = cardList.length;
-
-    ArrayList<String> selectedCards = new ArrayList<>(cardPool.subList(0, pairCount));
-
-    for (String cardName : selectedCards) {
-        URL imgURL = getClass().getClassLoader().getResource("res/" + cardName + ".png");
-        if (imgURL != null) {
-            Image cardImg = new ImageIcon(imgURL).getImage();
-            ImageIcon cardImageIcon = new ImageIcon(cardImg.getScaledInstance(cardWidth, cardHeight, Image.SCALE_SMOOTH));
-            Card card = new Card(cardName, cardImageIcon);
-            cardSet.add(card);
-        } else {
-            System.err.println("Image not found for card: " + cardName);
-        }
-    }
-
-    cardSet.addAll(new ArrayList<>(cardSet)); 
-
-    URL backURL = getClass().getClassLoader().getResource("res/back.jpg");
-    if (backURL != null) {
-        Image cardBackImg = new ImageIcon(backURL).getImage();
-        cardBackImageIcon = new ImageIcon(cardBackImg.getScaledInstance(cardWidth, cardHeight, Image.SCALE_SMOOTH));
-    } else {
-        System.err.println("Card back image not found!");
-    }
-}
-
-
-      
-
-    void shuffleCards() {
-        System.out.println(cardSet);
-        for (int i = 0; i < cardSet.size(); i++) {
-            int j = (int) (Math.random() * cardSet.size()); 
-            Card temp = cardSet.get(i);
-            cardSet.set(i, cardSet.get(j));
-            cardSet.set(j, temp);
-        }
-        System.out.println(cardSet);
-    }
-
-    void hideCards() {
-        if (gameReady && card1Selected != null && card2Selected != null) { 
-            card1Selected.setIcon(cardBackImageIcon);
-            card1Selected = null;
-            card2Selected.setIcon(cardBackImageIcon);
-            card2Selected = null;
-        }
-        else { 
-            for (int i = 0; i < board.size(); i++) {
-                board.get(i).setIcon(cardBackImageIcon);
-            }
-            gameReady = true;
-            restartButton.setEnabled(true);
-        }
-    }
-    
-    void resetBoard() {
-    boardPanel.removeAll();
-    board.clear();
-
-    int totalCards = cardSet.size();
-    int gridRows = rows;
-    int gridCols = totalCards / gridRows;
-    if (totalCards % gridRows != 0) gridCols++;
-
-    boardPanel.setLayout(new GridLayout(gridRows, gridCols));
-
-    for (int i = 0; i < totalCards; i++) {
-        JButton newTile = new JButton();
-        newTile.setPreferredSize(new Dimension(cardWidth, cardHeight));
-        newTile.setOpaque(true);
-        newTile.setIcon(cardSet.get(i).cardImageIcon);
-        newTile.setFocusable(false);
-        newTile.addActionListener(tileClickListener);
-        board.add(newTile);
-        boardPanel.add(newTile);
-    }
-
-    boardPanel.revalidate();
-    boardPanel.repaint();
-}
-
-    
-    void showFinalImagePopup() {
-    if (backgroundClip != null && backgroundClip.isRunning()) {
-        backgroundClip.stop();
-    }
-
-    URL victorySoundURL = getClass().getClassLoader().getResource("res/victory.wav");
-    playSoundEffect(victorySoundURL);
-
-    URL victoryImgURL = getClass().getClassLoader().getResource("res/victory.png");
-    if (victoryImgURL != null) {
-        ImageIcon imageIcon = new ImageIcon(victoryImgURL);
-        Image scaledImg = imageIcon.getImage().getScaledInstance(600, 400, Image.SCALE_SMOOTH);
-        ImageIcon scaledIcon = new ImageIcon(scaledImg);
-
-        JLabel imageLabel = new JLabel(scaledIcon);
-        JOptionPane.showMessageDialog(frame, imageLabel, "Congratulations!", JOptionPane.PLAIN_MESSAGE);
-    } else {
-        System.err.println("Victory image not found!");
-    }
-
-    URL bgMusicURL = getClass().getClassLoader().getResource("res/background.wav");
-    playBackgroundMusic(bgMusicURL);
-}
-
-
 
 }
 
