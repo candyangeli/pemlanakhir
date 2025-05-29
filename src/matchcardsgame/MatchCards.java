@@ -328,30 +328,7 @@ playSoundEffect(failSoundURL);
 
     setupCards();
     shuffleCards();
-
-    boardPanel.removeAll();
-    board.clear();
-
-    int totalCards = cardSet.size();
-    int gridRows = rows; 
-    int gridCols = totalCards / gridRows;
-    if (totalCards % gridRows != 0) gridCols++;
-
-    boardPanel.setLayout(new GridLayout(gridRows, gridCols));
-
-    for (int i = 0; i < totalCards; i++) {
-        JButton newTile = new JButton();
-        newTile.setPreferredSize(new Dimension(cardWidth, cardHeight));
-        newTile.setOpaque(true);
-        newTile.setIcon(cardSet.get(i).cardImageIcon);
-        newTile.setFocusable(false);
-        newTile.addActionListener(tileClickListener);
-        board.add(newTile);
-        boardPanel.add(newTile);
-    }
-
-    boardPanel.revalidate();
-    boardPanel.repaint();
+    resetBoard();
 
     textLabel.setText("Level " + getLevelName(level) + " - Errors: " + errorCount + "/" + maxErrors);
 
