@@ -148,9 +148,6 @@ public class MatchCards {
 
                 errorCount = 0;
                 textLabel.setText("Level "  + getLevelName(level) + " - Errors: " + errorCount + "/" + maxErrors);
-                for (int i = 0; i < board.size(); i++) {
-                    board.get(i).setIcon(cardSet.get(i).cardImageIcon); 
-                }
 
                 startLevelTimer.start();
             }
